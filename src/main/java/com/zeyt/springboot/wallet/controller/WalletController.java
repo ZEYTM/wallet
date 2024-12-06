@@ -38,7 +38,7 @@ public class WalletController {
     }
 
     @GetMapping("/getall")
-    public String getAll(){
+    public String getAll() {
         return walletService.getAll().toString();
     }
 
