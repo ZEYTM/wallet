@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  wallet-app:
+    build: .
+    container_name: wallet-app
+    ports:
+      - "8080:8080"  # Пробрасываем порт 8080
+    depends_on:
+      - db  # Ждем, пока база данных поднимется
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/wallet_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+    networks:
+      - wallet-network
+
+  db:
+    image: postgres:14
+    container_name: wallet-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=wallet_db
+    volumes:
+      - wallet-db-data:/var/lib/postgresql/data  # Для постоянства данных
+    ports:
+      - "5432:5432"
+    networks:
+      - wallet-network
+
+volumes:
+  wallet-db-data:
+    driver: local
+
+networks:
+  wallet-network:
+    driver: bridge

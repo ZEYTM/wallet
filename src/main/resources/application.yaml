@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: wallet
+
+  datasource:
+    username: postgres
+    password: postgress
+    url: jdbc:postgresql://localhost:5432/postgres
+    driver-class-name: org.postgresql.Driver
+
+  data:
+    jdbc:
+      dialect: postgresql
+
+  jpa:
+    hibernate:
+    ddl-auto: update
+    show-sql: true
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    enabled: true
