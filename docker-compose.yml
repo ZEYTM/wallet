@@ -20,7 +20,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgress
       - POSTGRES_DB=wallet_db
-      - PGOPTIONS=-c max_connections=200 -c shared_buffers=256MB -c work_mem=4MB -c maintenance_work_mem=64MB
+      - PGOPTIONS=-c max_connections=2000 -c shared_buffers=256MB -c work_mem=4MB -c maintenance_work_mem=64MB
 
     volumes:
       - wallet-db-data:/var/lib/postgresql/data  # Для постоянства данных

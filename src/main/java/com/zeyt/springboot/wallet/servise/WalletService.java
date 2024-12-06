@@ -10,11 +10,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class WalletService {
 
     private final WalletRepository walletRepository;
+    private final ExecutorService executorService = Executors.newCachedThreadPool(); // Пул потоков
 
     public WalletService(WalletRepository walletRepository) {
         this.walletRepository = walletRepository;
@@ -22,7 +25,6 @@ public class WalletService {
 
     @Transactional
     public void updateBalance(UUID id, OperationType operationType, Long amount) {
-
         if (amount == null || amount <= 0) {
             throw new InsufficientFundsException("Amount must be greater than 0");
         }
@@ -34,12 +36,15 @@ public class WalletService {
             throw new InsufficientFundsException("Insufficient funds");
         }
 
-        if (operationType == OperationType.DEPOSIT) {
-            wallet.setBalance(wallet.getBalance() + amount);
-        }
-        if (operationType == OperationType.WITHDRAW) {
-            wallet.setBalance(wallet.getBalance() - amount);
-        }
+        // Асинхронная обработка в пуле потоков
+        executorService.submit(() -> {
+            if (operationType == OperationType.DEPOSIT) {
+                wallet.setBalance(wallet.getBalance() + amount);
+            } else if (operationType == OperationType.WITHDRAW) {
+                wallet.setBalance(wallet.getBalance() - amount);
+            }
+            walletRepository.save(wallet); // Сохранение изменений в базу данных
+        });
     }
 
     @Transactional
