@@ -37,6 +37,11 @@ public class WalletController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+    @GetMapping("/getall")
+    public String getAll(){
+        return walletService.getAll().toString();
+    }
+
 
     @ExceptionHandler(InsufficientFundsException.class)
     public ResponseEntity<String> handleInsufficientFunds(InsufficientFundsException ex) {

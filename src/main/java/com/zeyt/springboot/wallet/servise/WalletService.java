@@ -7,6 +7,8 @@ import com.zeyt.springboot.wallet.utils.WalletNotFoundException;
 import com.zeyt.springboot.wallet.repository.WalletRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -21,11 +23,15 @@ public class WalletService {
     @Transactional
     public void updateBalance(UUID id, OperationType operationType, Long amount) {
 
+        if (amount == null || amount <= 0) {
+            throw new InsufficientFundsException("Amount must be greater than 0");
+        }
+
         Wallet wallet = walletRepository.findById(id).orElseThrow(() ->
                 new WalletNotFoundException("Wallet not found"));
 
         if (operationType == OperationType.WITHDRAW && amount > wallet.getBalance()) {
-            throw  new InsufficientFundsException("Insufficient funds");
+            throw new InsufficientFundsException("Insufficient funds");
         }
 
         if (operationType == OperationType.DEPOSIT) {
@@ -41,5 +47,10 @@ public class WalletService {
         Wallet wallet = walletRepository.findById(id).orElseThrow(() ->
                 new WalletNotFoundException("Wallet not found"));
         return wallet.getBalance();
+    }
+
+    @Transactional
+    public List<Wallet> getAll() {
+        return walletRepository.findAll();
     }
 }
