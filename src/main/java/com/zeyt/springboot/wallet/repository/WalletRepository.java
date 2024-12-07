@@ -11,8 +11,9 @@ import java.util.UUID;
 
 public interface WalletRepository extends JpaRepository<Wallet, UUID> {
 
-    @Override
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Override
     Optional<Wallet> findById(UUID uuid);
 
 }
