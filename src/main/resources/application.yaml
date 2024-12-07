@@ -3,33 +3,10 @@ spring:
     name: wallet
 
   datasource:
+    url: jdbc:postgresql://localhost:5432/wallet_db
     username: postgres
-    password: postgress
-    url: jdbc:postgresql://localhost:5432/postgres
+    password: password
     driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 50  # Максимальное количество соединений с БД
-      minimum-idle: 10  # Минимальное количество свободных соединений
-      connection-timeout: 20000  # Таймаут соединения (мс)
-      idle-timeout: 30000  # Таймаут простоя (мс)
-      max-lifetime: 1800000  # Максимальное время жизни соединения (мс)
-
-  server:
-    tomcat:
-      threads:
-        max: 200  # Максимальное количество потоков
-        min-spare: 20  # Резерв потоков
-      accept-count: 100  # Очередь запросов
-    max-http-header-size: 8192
-
-  data:
-    jdbc:
-      dialect: postgresql
-
-  jpa:
-    hibernate:
-    ddl-auto: update
-    show-sql: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
