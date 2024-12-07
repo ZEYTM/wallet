@@ -8,6 +8,9 @@ spring:
     password: password
     driver-class-name: org.postgresql.Driver
 
+    hikari:
+      maximum-pool-size: 100
+
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
     enabled: true
