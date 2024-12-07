@@ -1,19 +1,14 @@
 package com.zeyt.springboot.wallet.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import java.util.UUID;
+
+@Data
+@AllArgsConstructor
 public class WalletResponseDTO {
 
-
+    private UUID id;
     private Long balance;
-
-    public WalletResponseDTO(Long balance) {
-        this.balance = balance;
-    }
-
-    public Long getBalance() {
-        return balance;
-    }
-
-    public void setBalance(Long balance) {
-        this.balance = balance;
-    }
 }

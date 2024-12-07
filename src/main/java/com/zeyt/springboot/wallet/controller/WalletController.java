@@ -2,10 +2,11 @@ package com.zeyt.springboot.wallet.controller;
 
 import com.zeyt.springboot.wallet.dto.WalletRequestDTO;
 import com.zeyt.springboot.wallet.dto.WalletResponseDTO;
-
 import com.zeyt.springboot.wallet.servise.WalletService;
+import com.zeyt.springboot.wallet.servise.WalletServiceImpl;
 import com.zeyt.springboot.wallet.utils.InsufficientFundsException;
 import com.zeyt.springboot.wallet.utils.WalletNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,48 +16,58 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
+@Slf4j
 public class WalletController {
 
-    private final WalletService walletService;
+    private final WalletService walletServiceImpl;
 
-    public WalletController(WalletService walletService) {
-        this.walletService = walletService;
+    public WalletController(WalletServiceImpl walletServiceImpl) {
+        this.walletServiceImpl = walletServiceImpl;
     }
-
 
     @GetMapping("/wallets/{id}")
     public ResponseEntity<WalletResponseDTO> getBalance(@PathVariable("id") UUID id) {
-        Long balance = walletService.getBalance(id);
-        return ResponseEntity.ok(new WalletResponseDTO(balance));
+        log.info("Получен запрос на получение баланса для кошелька с ID: {}", id);
+        Long balance = walletServiceImpl.getBalance(id);
+        log.info("Баланс кошелька с ID {}: {}", id, balance);
+        return ResponseEntity.ok(new WalletResponseDTO(id, balance));
     }
 
-
     @PostMapping("/wallet")
-    public ResponseEntity<HttpStatus> update(@RequestBody WalletRequestDTO walletRequestDTO) {
-        walletService.updateBalance
-                (walletRequestDTO.getWalletId(), walletRequestDTO.getOperationType(), walletRequestDTO.getAmount());
-        return ResponseEntity.ok(HttpStatus.OK);
+    public ResponseEntity<String> update(@RequestBody WalletRequestDTO walletRequestDTO) {
+        log.info("Получен запрос на обновление кошелька: {}", walletRequestDTO);
+        walletServiceImpl.updateBalance(
+                walletRequestDTO.getWalletId(),
+                walletRequestDTO.getOperationType(),
+                walletRequestDTO.getAmount()
+        );
+        log.info("Кошелек с ID {} успешно обновлен", walletRequestDTO.getWalletId());
+        return ResponseEntity.ok("Кошелек успешно обновлен");
     }
 
     @GetMapping("/getall")
-    public String getAll() {
-        return walletService.getAll().toString();
+    public ResponseEntity<String> getAll() {
+        log.info("Получен запрос на получение всех кошельков");
+        String allWallets = walletServiceImpl.getAll().toString();
+        log.info("Возвращаются все кошельки: {}", allWallets);
+        return ResponseEntity.ok(allWallets);
     }
-
 
     @ExceptionHandler(InsufficientFundsException.class)
     public ResponseEntity<String> handleInsufficientFunds(InsufficientFundsException ex) {
+        log.error("Ошибка: недостаточно средств. Детали: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Insufficient Funds");
     }
 
     @ExceptionHandler(WalletNotFoundException.class)
     public ResponseEntity<String> handleWalletNotFoundException(WalletNotFoundException ex) {
+        log.error("Ошибка: кошелек не найден. Детали: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Wallet not found");
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<String> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        log.error("Ошибка: некорректный формат JSON. Детали: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON format");
     }
-
 }

@@ -3,7 +3,7 @@ package com.zeyt.springboot.wallet.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zeyt.springboot.wallet.dto.WalletRequestDTO;
 import com.zeyt.springboot.wallet.entity.OperationType;
-import com.zeyt.springboot.wallet.servise.WalletService;
+import com.zeyt.springboot.wallet.servise.WalletServiceImpl;
 import com.zeyt.springboot.wallet.utils.InsufficientFundsException;
 import com.zeyt.springboot.wallet.utils.WalletNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +29,7 @@ class WalletControllerTest {
     private ObjectMapper objectMapper;
 
     @Mock
-    private WalletService walletService;
+    private WalletServiceImpl walletServiceImpl;
 
     @InjectMocks
     private WalletController walletController;
@@ -46,7 +46,7 @@ class WalletControllerTest {
 
         UUID id = UUID.randomUUID();
         Long balance = 100L;
-        when(walletService.getBalance(id)).thenReturn(balance);
+        when(walletServiceImpl.getBalance(id)).thenReturn(balance);
         mockMvc.perform(get("/api/v1/wallets/" + id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.balance").value(balance));
@@ -58,7 +58,7 @@ class WalletControllerTest {
         Long amount = 100L;
         OperationType operationType = OperationType.DEPOSIT;
         WalletRequestDTO walletRequestDTO = new WalletRequestDTO(id, operationType, amount);
-        doNothing().when(walletService).updateBalance(id, operationType, amount);
+        doNothing().when(walletServiceImpl).updateBalance(id, operationType, amount);
         mockMvc.perform(post("/api/v1/wallet").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(walletRequestDTO)))
                 .andExpect(status().isOk());
@@ -68,7 +68,7 @@ class WalletControllerTest {
     void handleInsufficientFundsException() throws Exception {
         UUID id = UUID.randomUUID();
         doThrow(new InsufficientFundsException("Insufficient Funds"))
-                .when(walletService).updateBalance(eq(id), any(), anyLong());
+                .when(walletServiceImpl).updateBalance(eq(id), any(), anyLong());
 
         WalletRequestDTO walletRequestDTO = new WalletRequestDTO(id, OperationType.WITHDRAW, 100L);
 
@@ -82,7 +82,7 @@ class WalletControllerTest {
     @Test
     void handleWalletNotFoundException() throws Exception {
         UUID id = UUID.randomUUID();
-        when(walletService.getBalance(id)).thenThrow(new WalletNotFoundException("Wallet not found"));
+        when(walletServiceImpl.getBalance(id)).thenThrow(new WalletNotFoundException("Wallet not found"));
 
         mockMvc.perform(get("/api/v1/wallets/" + id))
                 .andExpect(status().isNotFound())
