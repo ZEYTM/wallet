@@ -13,7 +13,6 @@ public interface WalletRepository extends JpaRepository<Wallet, UUID> {
 
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Override
     Optional<Wallet> findById(UUID uuid);
 
 }
