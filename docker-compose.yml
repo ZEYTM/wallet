@@ -12,6 +12,11 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
     networks:
       - wallet-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   db:
     image: postgres:14
@@ -24,8 +29,35 @@ services:
       - wallet-db-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    command: >
+      postgres -c max_connections=500
     networks:
       - wallet-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h localhost || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  jmeter:
+    image: justb4/jmeter:5.5
+    container_name: jmeter
+    volumes:
+      - ./jmeter-tests:/jmeter-tests
+      - ./jmeter-results:/jmeter-results
+    entrypoint: >
+      sh -c "
+        until curl -s http://wallet-app:8080/actuator/health; do
+          echo 'Waiting for wallet-app to be ready...';
+          sleep 5;
+        done;
+        jmeter -n -t /jmeter-tests/test-plan.jmx -l /jmeter-results/results.jtl
+      "
+    depends_on:
+      - wallet-app
+    networks:
+      - wallet-network
+
 
 volumes:
   wallet-db-data:
